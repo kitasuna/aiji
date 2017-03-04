@@ -1,25 +1,81 @@
 import * as fs from 'fs'
 
 let dict = []
+let filename = './dict/v0.txt'
 
 // Loads the file into an object
-fs.readFile('./dict/v0.txt', 'utf8', function(err, data) {
-  let lines = data.split('\n') 
-  lines.forEach(function(line) {
-    line = stripTrailingComma(line)
-    let entry = line.split('|')
-    if(entry[1] !==  undefined) {
-      entry[1].split(',').forEach(function(key) {
-        dict[key] = entry[0]
+const readDictFile = function(filename) {
+  return new Promise(function(resolve, reject) {
+    try {
+      fs.readFile(filename, 'utf8', function(err, data) {
+        if(err) {
+          reject(err)
+        }
+
+        let lines = data.split('\n') 
+        lines.forEach(function(line) {
+          line = stripTrailingComma(line)
+          let entry = line.split('|')
+          if(entry[1] !==  undefined) {
+            entry[1].split(',').forEach(function(key) {
+              dict[key] = entry[0]
+            })
+          }
+        })
+
+        Object.keys(dict).forEach(function(key) {
+          dict[key] = parseDictEntry(dict, dict[key])
+        })
+
+        resolve(dict)
+
       })
+
+    } catch (err) {
+      reject(err)
     }
   })
+}
 
-	Object.keys(dict).forEach(function(key) {
-		dict[key] = parseDictEntry(dict, dict[key])
-	})
+const parseInFile = function(dict, filename = './data/t0.txt') {
+  return new Promise(function(resolve, reject) {
+    try {
+      fs.readFile(filename, 'utf8', function(err, data) {
+        if(err) {
+          // TODO: for some reason a missing file doesn't throw an error...
+          reject(err)
+        }
 
-})
+        let lines = data.split('\n')
+        // TODO: maintain capitalization if word is not in dictionary in lowercase form
+        lines.forEach(function(line) {
+          console.log('ORIG: "' + line + '"')
+          let translated = ''
+          let words = line.split(' ')
+          words.forEach(function (word, index) {
+            if(index != 0 && /^[A-Z]/.test(word)) {
+              // Untranslated words should be followed by a space
+              translated += word + ' '
+            } else {
+              let tw = dictLookup(dict, word.toLowerCase())
+              translated += tw
+            }
+          })
+          console.log('TRNS: "' + translated + '"')
+        })
+      })
+    } catch(err) {
+      reject(err)
+    }
+  })
+}
+
+readDictFile(filename)
+  .then(function(parsedDict) {
+    //console.dir(parsedDict)
+    return parsedDict
+  })
+  .then(parseInFile)
 
 // Recursively parse a single dict entry
 function parseDictEntry(dict, entry) {
