@@ -114,6 +114,3 @@ function stripTrailingComma(line) {
   }
 }
 
-function addEntry(dict, keys, value) {
-  return dict
-}
