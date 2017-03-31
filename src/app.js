@@ -1,5 +1,6 @@
 import express from 'express'
 import bodyParser from 'body-parser'
+import aiji from './aiji.js'
 
 const app = express()
 const router = express.Router()
@@ -35,6 +36,16 @@ router.route('/')
 router.route('/hello')
   .get(function(req, res) {
     res.send('Hello world aiji')
+  })
+
+router.route('/translate')
+  .get(function(req,res) {
+    aiji.readDictFile('./dict/v0.txt')
+      .then(function(dict) {return aiji.parseInFile(dict, './data/t0.txt')})
+      .then(function(parsed) {res.send(parsed)})
+      .catch(function(err) {
+        console.log('Error reported from fs: ' + err)
+      })
   })
 
 app.use('/', router)

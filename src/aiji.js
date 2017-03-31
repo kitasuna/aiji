@@ -14,6 +14,7 @@ module.exports = {
           } else {
 
             let lines = data.split('\n') 
+            let dict = []
             lines.forEach(function(line) {
               line = stripTrailingComma(line)
               let entry = line.split('|')
@@ -44,6 +45,7 @@ module.exports = {
           } else {
 
             let lines = data.split('\n')
+            let responseString = ''
             lines.forEach(function(line) {
               if(line != '') {
                 let translated = ''
@@ -57,10 +59,10 @@ module.exports = {
                     translated += tw
                   }
                 })
-                console.log('ORIG: "' + line + '"')
-                console.log('TRNS: "' + translated + '"')
+                responseString += '<p>ORIG: "' + line + '"<br />' + 'TRNS: "' + translated + '"</p>'
               }
             })
+            resolve(responseString)
           }
         })
     })
@@ -68,15 +70,6 @@ module.exports = {
 }
 
 
-readDictFile(filename)
-  .then(function(parsedDict) {
-    //console.dir(parsedDict)
-    return parsedDict
-  })
-  .then(parseInFile)
-  .catch(function(err) {
-    console.log('Error reported from fs: ' + err)
-  })
 
 // Recursively parse a single dict entry
 function parseDictEntry(dict, entry) {
